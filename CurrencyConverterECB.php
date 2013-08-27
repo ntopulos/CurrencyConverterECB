@@ -8,10 +8,9 @@
  * ECB link:
  * http://www.ecb.europa.eu/stats/exchange/eurofxref/html/index.en.html
  *
- * This class is inspired by the work of Simon Jarvis:
- * http://www.white-hat-web-design.co.uk/articles/php-currency-conversion.php
- *
  * @author		Nikos Topulos
+ * @version 	1.0
+ * @link 		
  */
 class CurrencyConverterECB {
 
@@ -36,9 +35,7 @@ class CurrencyConverterECB {
 		$this->mysqli = $mysqli;
 		$this->email = $email;
 
-		if( $this->isUpToDate()) {
-			echo 'up to date';
-		} else {
+		if(!$this->isUpToDate()) {
 			echo 'must be updated';
 
 			$this->updateRates();
@@ -66,6 +63,12 @@ class CurrencyConverterECB {
 		}
 	}
 
+	/**
+	 * Updates the rates that exists in the table.
+	 *
+	 * @param	void
+	 * @return	void
+	*/
 	private function updateRates() {
 
 		// Getting columns (within are currencies ids)
@@ -104,9 +107,7 @@ class CurrencyConverterECB {
 					VALUES ". $values_str;
 
 		// Inserting into DB
-		$this->mysqli->query($query) or die('Error: CurrencyConverterECB insert failed');
-
-
+		$this->mysqli->query($query) or die('CurrencyConverterECB error: MySQL insert failed');
 	}
 
 	/**
@@ -118,7 +119,7 @@ class CurrencyConverterECB {
 	*/
 	public function downloadLastRates() {
 
-		// curl cubrid_query 	- TO DO ADD HTTP CODE MANAGEMENT
+		// curl
 		$curl = curl_init();
 
 		curl_setopt_array($curl, array(
@@ -133,11 +134,17 @@ class CurrencyConverterECB {
 
 		curl_close($curl);
 
-		// converting to array
+		// No http error authorized
+		if($http_code >= 400) {
+			die('CurrencyConverterECB error: HTTP status code ' . $http_code);
+		}
+
+		// Converting to an array
 		$pattern = "{<Cube\s*currency='(\w*)'\s*rate='([\d\.]*)'/>}is";
 		preg_match_all($pattern,$result,$xml_rates);
 		array_shift($xml_rates);
 
+		// Returning associative array (currencies -> rates)
 		return array_combine($xml_rates[0], $xml_rates[1]);
 	}
 }
