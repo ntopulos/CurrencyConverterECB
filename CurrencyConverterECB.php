@@ -57,7 +57,7 @@ class CurrencyConverterECB {
 
 		$res = $this->mysqli->query(
 			"SELECT * FROM " .$this->table. "
-			WHERE 'exchange_rate_date' = NOW()");
+			WHERE `exchange_rate_date` = CURDATE()");
 
 		if($res->num_rows == 1) {
 			return true;
@@ -68,35 +68,45 @@ class CurrencyConverterECB {
 
 	private function updateRates() {
 
-		// Getting colums (within we have currencies ids)
+		// Getting columns (within are currencies ids)
 		$res = $this->mysqli->query(
 			"SELECT DISTINCT column_name
-			FROM information_schema.columns
-			WHERE `table_name` = '$this->table'");
+				FROM information_schema.columns
+				WHERE `table_name` = '$this->table'");
 
 		$arr = $res->fetch_all();
+		$res->close();
 
 		foreach($arr as $row) {
 			$db_columns[] = $row[0];
 		}
 
 		// Getting last rates
-		$last_rates = $this->downloadLastRates();
+		$last_rates_raw = $this->downloadLastRates();
 
 		// Filtering (intersecting) of both arrays
-		$intersection = array_intersect_key($last_rates,array_flip($db_columns));
+		$last_rates = array_intersect_key($last_rates_raw, array_flip($db_columns));
 
-		print_r($intersection);
-		// Updating DB
+		// Preparing query
+		$keys_str = "(`exchange_rate_date`";
+		$values_str = '(NOW()';
 
-		$query = "INSERT INTO $this->table (link) VALUES (?)";
-		$stmt = $mysqli->prepare($query);
-
-		foreach ($array as $one) {
-		$stmt ->bind_param("s", $one);
-		$stmt->execute();
+		foreach($last_rates as $key => $value) {
+			$keys_str .= ",`" .$this->mysqli->real_escape_string($key). "`";
+			$values_str .= "," .floatval($value);
 		}
-		$stmt->close();
+
+		$keys_str .= ')';
+		$values_str .= ')';
+
+		$query = "INSERT INTO `" .$this->table. "` ".
+					$keys_str. "
+					VALUES ". $values_str;
+
+		// Inserting into DB
+		$this->mysqli->query($query) or die('Error: CurrencyConverterECB insert failed');
+
+
 	}
 
 	/**
