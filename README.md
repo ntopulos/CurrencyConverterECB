@@ -1,6 +1,5 @@
 CurrencyConverterECB
 ====================
-====================
 
 PHP class that allows to access currency exchange rates published by the European Central Bank (ECB).
 
@@ -11,7 +10,7 @@ This script was made for an existing project therefore you could want to change 
 
 
 Usage
-=====
+-----
 
 MySQL table is needed to store the exchange rates:
 
@@ -47,7 +46,7 @@ $CurrencyConverterECB->exchange_rates;
 ```
 
 References
-==========
+----------
 
 European Central Bank exchange rates:
 
