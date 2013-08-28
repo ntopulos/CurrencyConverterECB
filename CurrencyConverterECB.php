@@ -10,7 +10,7 @@
  *
  * @author		Nikos Topulos
  * @version 	1.0
- * @link 		
+ * @link 		https://github.com/ntopulos/CurrencyConverterECB
  */
 class CurrencyConverterECB {
 
