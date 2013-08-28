@@ -20,21 +20,19 @@ class CurrencyConverterECB {
 
 	// Basics
 	private $mysqli;
-	private $email;
+	public $exchange_rates = array();
 
 	/**
 	 * Constructor, initializations and check if the database is up to date
 	 *
 	 * @param 	string 		name of the table
 	 * @param	object		mysqli connection
-	 * @param 	string 		email address in case of execution issues
 	 * @return	void
 	*/
-	function __construct($mysqli, $email) {
+	function __construct($mysqli) {
 
 		// Init
 		$this->mysqli = $mysqli;
-		$this->email = $email;
 
 		// Check and update
 		if(!$this->isUpToDate()) {
@@ -45,6 +43,7 @@ class CurrencyConverterECB {
 
 	/**
 	 * Verifies whether exchange rates in the db are up to date (daily update).
+	 * If true assigns rates to $this->exchange_rates.
 	 * Returns true or false.
 	 *
 	 * @param	void
@@ -57,10 +56,21 @@ class CurrencyConverterECB {
 			WHERE `exchange_rate_date` = CURDATE()");
 
 		if($res->num_rows == 1) {
+
+			$row = $res->fetch_assoc();
+
+			// deleting not currency columns
+			array_shift($row);
+			array_shift($row);
+
+			$this->exchange_rates = $row;
+
 			return true;
 		} else {
 			return false;
 		}
+
+		$res->close();
 	}
 
 	/**
@@ -70,9 +80,9 @@ class CurrencyConverterECB {
 	 * @param	string
 	 * @param	string
 	 * @param	int
-	 * @return	void
+	 * @return	float
 	*/
-	public function convert($amount=1, $from="EUR", $to="CHF", $decimals=2) {
+	public function convert($amount=1, $from='EUR', $to='CHF', $decimals=2) {
 
 		return(number_format(($amount/$this->exchange_rates[$from])*$this->exchange_rates[$to],$decimals));
 	}
@@ -98,11 +108,12 @@ class CurrencyConverterECB {
 			$db_columns[] = $row[0];
 		}
 
+
 		// Getting last rates
-		$last_rates_raw = $this->downloadLastRates();
+		$this->downloadLastRates();
 
 		// Filtering (intersecting) of both arrays
-		$last_rates = array_intersect_key($last_rates_raw, array_flip($db_columns));
+		$last_rates = array_intersect_key($this->exchange_rates, array_flip($db_columns));
 
 		// Preparing query
 		$keys_str = "(`exchange_rate_date`";
@@ -126,10 +137,9 @@ class CurrencyConverterECB {
 
 	/**
 	 * Downloads the last rates from the ECB.
-	 * Returns an associative array with currencies -> rates.
+	 * Assigns an associative array of currencies -> rates to exchange_rates.
 	 *
 	 * @param	void
-	 * @return	array
 	*/
 	public function downloadLastRates() {
 
@@ -159,6 +169,16 @@ class CurrencyConverterECB {
 		array_shift($xml_rates);
 
 		// Returning associative array (currencies -> rates)
-		return array_combine($xml_rates[0], $xml_rates[1]);
+		$result = array_combine($xml_rates[0], $xml_rates[1]);
+
+		// Checking for error
+		if(empty($result)) {
+			die('CurrencyConverterECB error: empty result');
+		}
+
+		// Adding EUR = 1
+		$result = array('EUR' => 1) + $result;
+
+		$this->exchange_rates = $result;
 	}
 }
