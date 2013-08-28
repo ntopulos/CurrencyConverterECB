@@ -16,10 +16,10 @@ class CurrencyConverterECB {
 
 	// Configuration
 	private $source = 'www.ecb.int/stats/eurofxref/eurofxref-daily.xml';
-	private $table = 'currency_exchange';	// mysql table name
 
 	// Basics
 	private $mysqli;
+	private $table;
 	public $exchange_rates = array();
 
 	/**
@@ -29,10 +29,11 @@ class CurrencyConverterECB {
 	 * @param	object		mysqli connection
 	 * @return	void
 	*/
-	function __construct($mysqli) {
+	function __construct($table, $mysqli) {
 
 		// Init
 		$this->mysqli = $mysqli;
+		$this->table = $table;
 
 		// Check and update
 		if(!$this->isUpToDate()) {

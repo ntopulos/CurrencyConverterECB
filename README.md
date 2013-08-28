@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `currency_exchange` (
 Create a new object, it will check the currency rates online and if needed update your database.
 
 ```php
-$CurrencyConverterECB = new CurrencyConverterECB($mysqli);
+$CurrencyConverterECB = new CurrencyConverterECB($table_name, $mysqli);
 // assuming $mysqli is a mysqli connection
 ```
 
