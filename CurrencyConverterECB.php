@@ -23,7 +23,7 @@ class CurrencyConverterECB {
 	private $email;
 
 	/**
-	 * Constructor, initializes variables
+	 * Constructor, initializations and check if the database is up to date
 	 *
 	 * @param 	string 		name of the table
 	 * @param	object		mysqli connection
@@ -32,12 +32,12 @@ class CurrencyConverterECB {
 	*/
 	function __construct($mysqli, $email) {
 
+		// Init
 		$this->mysqli = $mysqli;
 		$this->email = $email;
 
+		// Check and update
 		if(!$this->isUpToDate()) {
-			echo 'must be updated';
-
 			$this->updateRates();
 		}
 
@@ -61,6 +61,20 @@ class CurrencyConverterECB {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * Perform the conversion.
+	 *
+	 * @param	float
+	 * @param	string
+	 * @param	string
+	 * @param	int
+	 * @return	void
+	*/
+	public function convert($amount=1, $from="EUR", $to="CHF", $decimals=2) {
+
+		return(number_format(($amount/$this->exchange_rates[$from])*$this->exchange_rates[$to],$decimals));
 	}
 
 	/**
@@ -134,7 +148,7 @@ class CurrencyConverterECB {
 
 		curl_close($curl);
 
-		// No http error authorized
+		// No HTTP error authorized
 		if($http_code >= 400) {
 			die('CurrencyConverterECB error: HTTP status code ' . $http_code);
 		}
