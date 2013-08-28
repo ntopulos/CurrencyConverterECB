@@ -41,7 +41,7 @@ Converting:
 $CurrencyConverterECB->convert(1,'USD','EUR');
 ```
 
-You can also access the echange rates:
+You can also access the echange rates array:
 ```php
 $CurrencyConverterECB->exchange_rates;
 ```
@@ -50,7 +50,9 @@ References
 ==========
 
 European Central Bank exchange rates:
+
 http://www.ecb.europa.eu/stats/exchange/eurofxref/html/index.en.html
 
 This code was inspired by the work of Simon Jarvis:
+
 http://www.white-hat-web-design.co.uk/blog/php-currency-conversion-exchange-rates-xml/
