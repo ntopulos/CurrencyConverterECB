@@ -52,21 +52,42 @@ class CurrencyConverterECB {
 	*/
 	private function isUpToDate() {
 
+		$today_rates = $this->getRatesFromDB();
+
+		if($today_rates) {
+			$this->exchange_rates = $today_rates;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Gets currency rates from the DB.
+	 *
+	 * @param	date/false 		MySQL date or false (= CURDATE())
+	 * @return	array/false 	array of the rates or false if no rates found
+	*/
+	public function getRatesFromDB($date=false) {
+
+		// adapting date for the query
+		$date = (!$date ? 'CURDATE()' : "'" .$date. "'");
+
 		$res = $this->mysqli->query(
 			"SELECT * FROM " .$this->table. "
-			WHERE `exchange_rate_date` = CURDATE()");
+			WHERE `exchange_rate_date` = $date");
 
 		if($res->num_rows == 1) {
 
 			$row = $res->fetch_assoc();
 
-			// deleting not currency columns
-			array_shift($row);
+			// droping not currency column
 			array_shift($row);
 
-			$this->exchange_rates = $row;
+			// adding EUR to the array
+			$row['EUR'] = 1;
 
-			return true;
+			return $row;
 		} else {
 			return false;
 		}
@@ -75,21 +96,28 @@ class CurrencyConverterECB {
 	}
 
 	/**
-	 * Perform the conversion.
+	 * Performs the conversion.
 	 *
 	 * @param	float
 	 * @param	string
 	 * @param	string
+	 * @param 	date
 	 * @param	int
 	 * @return	float
 	*/
-	public function convert($amount=1, $from='EUR', $to='CHF', $decimals=2) {
+	public function convert($amount=1, $from, $to, $date=false, $precision=2) {
 
-		return(number_format(($amount/$this->exchange_rates[$from])*$this->exchange_rates[$to],$decimals));
+		$rates = (!$date ? $this->exchange_rates : $this->getRatesFromDB($date));
+
+		if(!$rates) {
+			$this->error('no entry for '.$date);
+		}
+
+		return(round(($amount/$rates[$from])*$rates[$to], $precision));
 	}
 
 	/**
-	 * Updates the rates that exists in the table.
+	 * Updates the rates that exist in the table.
 	 *
 	 * @param	void
 	 * @return	void
@@ -111,7 +139,7 @@ class CurrencyConverterECB {
 
 
 		// Getting last rates
-		$this->downloadLastRates();
+		$this->downloadLatestRates();
 
 		// Filtering (intersecting) of both arrays
 		$last_rates = array_intersect_key($this->exchange_rates, array_flip($db_columns));
@@ -133,7 +161,7 @@ class CurrencyConverterECB {
 					VALUES ". $values_str;
 
 		// Inserting into DB
-		$this->mysqli->query($query) or die('CurrencyConverterECB error: MySQL insert failed');
+		$this->mysqli->query($query) or $this->error('MySQL insert failed');
 	}
 
 	/**
@@ -142,7 +170,7 @@ class CurrencyConverterECB {
 	 *
 	 * @param	void
 	*/
-	public function downloadLastRates() {
+	public function downloadLatestRates() {
 
 		// curl
 		$curl = curl_init();
@@ -161,7 +189,7 @@ class CurrencyConverterECB {
 
 		// No HTTP error authorized
 		if($http_code >= 400) {
-			die('CurrencyConverterECB error: HTTP status code ' . $http_code);
+			$this->error('HTTP status code ' . $http_code);
 		}
 
 		// Converting to an array
@@ -174,12 +202,22 @@ class CurrencyConverterECB {
 
 		// Checking for error
 		if(empty($result)) {
-			die('CurrencyConverterECB error: empty result');
+			$this->error('empty result');
 		}
 
 		// Adding EUR = 1
 		$result = array('EUR' => 1) + $result;
 
 		$this->exchange_rates = $result;
+	}
+
+	/**
+	 * Minimalistic error handler.
+	 *
+	 * @param	string
+	 * @return	void
+	*/
+	private function error($msg) {
+		die('CurrencyConverterECB error: '.$msg);
 	}
 }
