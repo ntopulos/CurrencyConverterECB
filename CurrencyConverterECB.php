@@ -9,7 +9,7 @@
  * http://www.ecb.europa.eu/stats/exchange/eurofxref/html/index.en.html
  *
  * @author		Nikos Topulos
- * @version 	1.0.1
+ * @version 	1.1.1
  * @link 		https://github.com/ntopulos/CurrencyConverterECB
  */
 class CurrencyConverterECB {
