@@ -1,7 +1,7 @@
 CurrencyConverterECB
 ====================
 
-PHP class that allows to access currency exchange rates published by the European Central Bank (ECB).
+PHP class that allows to access currency exchange rates daily published by the European Central Bank (ECB).
 
 All exchange rates are relative to the EUR.
 
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `currency_exchange` (
 )
 ```
 
-Create a new object, it will check the currency rates online and if necessary update your database.
+Create a new object, if it will update the currency rates in the database.
 
 ```php
 $CurrencyConverterECB = new CurrencyConverterECB($table_name, $mysqli);
