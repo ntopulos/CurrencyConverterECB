@@ -12,7 +12,7 @@ This script was made for an existing project therefore you could want to change 
 Usage
 -----
 
-MySQL table is needed to store the exchange rates. All rates are relative to 1 EUR.
+MySQL table is needed to store the exchange rates. All rates are relative to 1 EUR:
 
 ```mysql
 CREATE TABLE IF NOT EXISTS `currency_exchange` (
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `currency_exchange` (
 )
 ```
 
-Create a new object, if it will update the currency rates in the database.
+Create a new object, if necessary it will update the currency rates stored in the database:
 
 ```php
 $CurrencyConverterECB = new CurrencyConverterECB($table_name, $mysqli);
@@ -40,7 +40,7 @@ $CurrencyConverterECB->convert(1,'USD','EUR');
 $CurrencyConverterECB->convert(1,'USD','EUR', '2013-08-28');
 ```
 
-You can also access the exchange rates array:
+You can also access the exchange rates array (current day rates):
 ```php
 $CurrencyConverterECB->exchange_rates;
 ```
