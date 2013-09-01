@@ -9,7 +9,7 @@
  * http://www.ecb.europa.eu/stats/exchange/eurofxref/html/index.en.html
  *
  * @author		Nikos Topulos
- * @version 	1.1.1+
+ * @version 	1.1.2
  * @link 		https://github.com/ntopulos/CurrencyConverterECB
  */
 class CurrencyConverterECB {
@@ -133,7 +133,7 @@ class CurrencyConverterECB {
 		while($row = $res->fetch_row()) {
 			$db_columns[] = $row[0];
 		}
-		
+
 		$res->close();
 
 		// Getting last rates
