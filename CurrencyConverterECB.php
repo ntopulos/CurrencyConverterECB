@@ -15,7 +15,7 @@
 class CurrencyConverterECB {
 
 	// Configuration
-	private $source = 'www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
+	private $source = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
 	// Basics
 	private $mysqli;
