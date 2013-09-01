@@ -9,13 +9,13 @@
  * http://www.ecb.europa.eu/stats/exchange/eurofxref/html/index.en.html
  *
  * @author		Nikos Topulos
- * @version 	1.1.2
+ * @version 	1.1.3
  * @link 		https://github.com/ntopulos/CurrencyConverterECB
  */
 class CurrencyConverterECB {
 
 	// Configuration
-	private $source = 'www.ecb.int/stats/eurofxref/eurofxref-daily.xml';
+	private $source = 'www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
 	// Basics
 	private $mysqli;
@@ -126,9 +126,10 @@ class CurrencyConverterECB {
 
 		// Getting columns (within are currencies ids)
 		$res = $this->mysqli->query(
-			"SELECT DISTINCT column_name
+			"SELECT `column_name`
 				FROM information_schema.columns
-				WHERE `table_name` = '$this->table'");
+				WHERE `TABLE_SCHEMA` IN (SELECT database())
+				AND `table_name` = '$this->table'") or die($this->mysqli->error);
 
 		while($row = $res->fetch_row()) {
 			$db_columns[] = $row[0];
@@ -176,8 +177,7 @@ class CurrencyConverterECB {
 		curl_setopt_array($curl, array(
 			CURLOPT_URL 			=> $this->source,
 			CURLOPT_RETURNTRANSFER 	=> 1,
-			CURLOPT_TIMEOUT			=> 2,
-			CURLOPT_FOLLOWLOCATION => true
+			CURLOPT_TIMEOUT			=> 2
 		));
 
 		$result = curl_exec($curl); 
@@ -189,7 +189,7 @@ class CurrencyConverterECB {
 		if($http_code >= 400) {
 			$this->error('HTTP status code ' . $http_code);
 		}
-
+		
 		// Converting to an array
 		$pattern = "{<Cube\s*currency='(\w*)'\s*rate='([\d\.]*)'/>}is";
 		preg_match_all($pattern,$result,$xml_rates);
