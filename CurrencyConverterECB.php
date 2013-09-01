@@ -129,7 +129,7 @@ class CurrencyConverterECB {
 			"SELECT `column_name`
 				FROM information_schema.columns
 				WHERE `TABLE_SCHEMA` IN (SELECT database())
-				AND `table_name` = '$this->table'") or die($this->mysqli->error);
+				AND `table_name` = '$this->table'") or $this->error('MySQL columns select failed');
 
 		while($row = $res->fetch_row()) {
 			$db_columns[] = $row[0];
