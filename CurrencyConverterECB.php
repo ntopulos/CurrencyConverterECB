@@ -186,7 +186,7 @@ class CurrencyConverterECB {
 		curl_close($curl);
 
 		// No HTTP error authorized
-		if($http_code >= 400) {
+		if($http_code != 200) {
 			$this->error('HTTP status code ' . $http_code);
 		}
 		
